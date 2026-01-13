@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maths Pissa | සදිශ සංඛ්‍යා පූර්ණ පාඩම</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;700;900&display=swap');
+        
+        :root {
+            --primary: #38bdf8;
+            --secondary: #818cf8;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --bg-dark: #020617;
+        }
+
+        body {
+            font-family: 'Noto Sans Sinhala', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-hover:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 3D Container Styling */
+        #canvas-container {
+            width: 100%;
+            height: 450px;
+            border-radius: 30px;
+            position: relative;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+        }
+
+        /* Nav Link Hover */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .floating { animation: float 6s ease-in-out infinite; }
+
+        .operation-btn {
+            @apply px-4 py-2 rounded-lg font-bold transition-all duration-300 border border-white/10;
+        }
+        .operation-btn.active {
+            @apply border-blue-500 bg-blue-500/20 text-blue-400;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dynamic Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 glass border-b border-white/5 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i data-lucide="calculator" class="text-white"></i>
+                </div>
+                <span class="text-xl font-black tracking-tighter">MATHS <span class="text-blue-400">PISSA</span></span>
+            </div>
+            <div class="hidden md:flex gap-8 text-sm font-bold uppercase tracking-widest text-slate-400">
+                <a href="#intro" class="nav-link hover:text-white transition">හැඳින්වීම</a>
+                <a href="#visualizer" class="nav-link hover:text-white transition">3D අවකාශය</a>
+                <a href="#arithmetic" class="nav-link hover:text-white transition">ගණනය කිරීම්</a>
+                <a href="#challenge" class="nav-link hover:text-white transition">අභියෝගය</a>
+            </div>
+            <button class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-full text-sm font-bold transition">Login</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="intro" class="relative min-h-screen flex flex-col items-center justify-center p-6 pt-24 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full -z-10 opacity-30">
+            <div class="absolute top-1/4 left-1/3 w-96 h-96 bg-blue-600 rounded-full blur-[150px] floating"></div>
+            <div class="absolute bottom-1/4 right-1/3 w-96 h-96 bg-purple-600 rounded-full blur-[150px] floating" style="animation-delay: -3s;"></div>
+        </div>
+
+        <div class="max-w-4xl text-center space-y-6">
+            <div class="inline-block px-4 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
+                Grade 08 Mathematics Lesson
+            </div>
+            <h1 class="text-6xl md:text-8xl font-black leading-tight">සදිශ සංඛ්‍යා <br><span class="gradient-text italic">පූර්ණ අත්දැකීම</span></h1>
+            <p class="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-2xl mx-auto">
+                ධන සහ සෘණ සංඛ්‍යාවලින් ගණන් හදන හැටි, 3D තාක්ෂණය සහ ක්‍රීඩා ඇසුරින් සරලව ඉගෙන ගනිමු.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4 mt-10">
+                <a href="#visualizer" class="bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-2xl font-bold shadow-2xl shadow-blue-600/20 transition-all flex items-center gap-2">
+                    දැන්ම පටන් ගනිමු <i data-lucide="arrow-right"></i>
+                </a>
+                <button class="glass hover:bg-white/10 text-white px-10 py-4 rounded-2xl font-bold transition-all border border-white/10">
+                    විෂය නිර්දේශය
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Sections -->
+    <main class="max-w-6xl mx-auto px-6 space-y-32 pb-32">
+
+        <!-- Section 1: Theory Fundamentals -->
+        <section class="grid lg:grid-cols-2 gap-16 items-center">
+            <div class="space-y-8">
+                <div class="inline-flex items-center gap-3 text-blue-400">
+                    <span class="w-12 h-[2px] bg-blue-400"></span>
+                    <span class="font-bold uppercase tracking-widest text-sm">මූලික දැනුම</span>
+                </div>
+                <h2 class="text-4xl font-bold">දිශාවක් සහිත සංඛ්‍යා?</h2>
+                <p class="text-slate-400 leading-relaxed">
+                    අපි එදිනෙදා භාවිතා කරන $1, 2, 3$ වගේ සංඛ්‍යාවලට අමතරව, ඒවායේ දිශාව දැක්වීමට ලකුණක් පාවිච්චි කරනවා. මෙය "සදිශ සංඛ්‍යා" ලෙස හඳුන්වයි.
+                </p>
+                <div class="grid gap-4">
+                    <div class="glass p-6 rounded-2xl flex gap-5 items-start">
+                        <div class="bg-green-500/20 p-3 rounded-xl text-green-500"><i data-lucide="trending-up"></i></div>
+                        <div>
+                            <h4 class="font-bold text-green-400">ධන සංඛ්‍යා (+)</h4>
+                            <p class="text-sm text-slate-400 italic">උදා: බැංකුවක තැන්පත් මුදල, කන්දක උස, උෂ්ණත්වය ඉහළ යාම.</p>
+                        </div>
+                    </div>
+                    <div class="glass p-6 rounded-2xl flex gap-5 items-start">
+                        <div class="bg-red-500/20 p-3 rounded-xl text-red-500"><i data-lucide="trending-down"></i></div>
+                        <div>
+                            <h4 class="font-bold text-red-400">සෘණ සංඛ්‍යා (-)</h4>
+                            <p class="text-sm text-slate-400 italic">උදා: ණය මුදල්, මුහුදු මට්ටමෙන් පහළ ගැඹුර, හිම මිදෙන උෂ්ණත්වයට වඩා අඩු වීම.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="glass p-10 rounded-[40px] relative z-10">
+                    <h3 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <i data-lucide="info" class="text-blue-400"></i> විශේෂ කරුණ
+                    </h3>
+                    <div class="p-6 bg-blue-600/10 border-l-4 border-blue-500 rounded-r-xl">
+                        <p class="text-slate-200">
+                            "බිංදුව (0)" කියන්නේ ධනවත් නෙවෙයි, සෘණවත් නෙවෙයි. එය මධ්‍යස්ථ ලක්ෂ්‍යයයි.
+                        </p>
+                    </div>
+                    <div class="mt-8 grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-800/50 rounded-2xl text-center">
+                            <span class="block text-3xl font-bold text-blue-400">0</span>
+                            <span class="text-xs uppercase text-slate-500">මධ්‍යය</span>
+                        </div>
+                        <div class="p-4 bg-slate-800/50 rounded-2xl text-center">
+                            <span class="block text-3xl font-bold text-purple-400">∞</span>
+                            <span class="text-xs uppercase text-slate-500">අනන්තය</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl -z-0"></div>
+            </div>
+        </section>
+
+        <!-- Section 2: 3D Visualizer -->
+        <section id="visualizer" class="space-y-10">
+            <div class="text-center space-y-4">
+                <h2 class="text-4xl font-bold">3D සංඛ්‍යා රේඛා Visualizer</h2>
+                <p class="text-slate-400">සංඛ්‍යා රේඛාව මත සදිශ සංඛ්‍යා හැසිරෙන ආකාරය සජීවීව නරඹන්න.</p>
+            </div>
+
+            <div class="glass p-4 rounded-[32px] overflow-hidden">
+                <div id="canvas-container">
+                    <!-- Three.js Appends here -->
+                    <div class="absolute top-6 left-6 z-20 flex gap-4">
+                        <div class="glass px-4 py-2 rounded-full text-xs font-bold border-blue-500/30">
+                            X-AXIS VIEW
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-8 bg-slate-900/80 border-t border-white/5 grid md:grid-cols-3 gap-8 items-center">
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">සංඛ්‍යාත්මක අගය (Value)</label>
+                        <input type="range" id="slider3d" min="-10" max="10" value="0" step="1" 
+                               class="w-full h-3 bg-slate-700 rounded-full appearance-none cursor-pointer accent-blue-500">
+                        <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                            <span>-10.0</span>
+                            <span>0.0</span>
+                            <span>+10.0</span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm text-slate-500 mb-1 font-bold">පවතින ස්ථානය</div>
+                        <div id="displayVal" class="text-6xl font-black text-white">0</div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="autoPlay()" class="bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2">
+                            <i data-lucide="play"></i> Auto Jump
+                        </button>
+                        <button onclick="resetCamera()" class="glass py-3 rounded-xl font-bold transition flex items-center justify-center gap-2">
+                            <i data-lucide="refresh-ccw"></i> Reset View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Advanced Rules (Addition & Subtraction) -->
+        <section id="arithmetic" class="space-y-16">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div class="space-y-4">
+                    <h2 class="text-4xl font-bold">ගණිතමය ක්‍රියාවලීන්</h2>
+                    <p class="text-slate-400 max-w-xl">එකතු කිරීමේ සහ අඩු කිරීමේ සිට ගුණ කිරීම සහ බෙදීම දක්වා සියලුම රීති මෙහි ඇත.</p>
+                </div>
+                <div class="flex gap-2 p-1 bg-slate-800 rounded-xl">
+                    <button onclick="switchArithmetic('add')" id="tab-add" class="arithmetic-tab active px-6 py-2 rounded-lg font-bold text-sm transition-all bg-blue-600 text-white shadow-lg">එකතු කිරීම/අඩු කිරීම</button>
+                    <button onclick="switchArithmetic('multi')" id="tab-multi" class="arithmetic-tab px-6 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">ගුණ කිරීම/බෙදීම</button>
+                </div>
+            </div>
+
+            <!-- TAB 1: ADDITION / SUBTRACTION -->
+            <div id="content-add" class="grid md:grid-cols-2 gap-8">
+                <div class="glass p-10 rounded-[40px] border-t-8 border-green-500 glass-hover">
+                    <div class="w-16 h-16 bg-green-500/20 rounded-2xl flex items-center justify-center text-green-500 mb-8">
+                        <i data-lucide="plus" class="w-10 h-10"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">ලකුණු සමාන නම්</h3>
+                    <p class="text-slate-400 mb-8">සංඛ්‍යා දෙකෙහිම ලකුණු එක හා සමාන අවස්ථාවක ( (+,+) හෝ (-,-) ):</p>
+                    <ul class="space-y-6">
+                        <li class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-slate-900 font-black">1</div>
+                            <div>
+                                <h5 class="font-bold text-white">එකතු කරන්න</h5>
+                                <p class="text-sm text-slate-400">ලකුණ නොසලකා සංඛ්‍යා දෙක එකතු කරන්න.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-slate-900 font-black">2</div>
+                            <div>
+                                <h5 class="font-bold text-white">පොදු ලකුණ තබන්න</h5>
+                                <p class="text-sm text-slate-400">පිළිතුරට සංඛ්‍යා දෙකෙහි තිබූ ලකුණම දමන්න.</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="mt-10 p-5 bg-black/40 rounded-2xl border border-white/5 font-mono text-green-400">
+                        (+10) + (+5) = <span class="text-white">+15</span><br>
+                        (-8) + (-2) = <span class="text-white">-10</span>
+                    </div>
+                </div>
+
+                <div class="glass p-10 rounded-[40px] border-t-8 border-orange-500 glass-hover">
+                    <div class="w-16 h-16 bg-orange-500/20 rounded-2xl flex items-center justify-center text-orange-500 mb-8">
+                        <i data-lucide="minus" class="w-10 h-10"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">ලකුණු වෙනස් නම්</h3>
+                    <p class="text-slate-400 mb-8">සංඛ්‍යා දෙකෙහි ලකුණු එකිනෙකට වෙනස් අවස්ථාවක ( (+,-) හෝ (-,+) ):</p>
+                    <ul class="space-y-6">
+                        <li class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-slate-900 font-black">1</div>
+                            <div>
+                                <h5 class="font-bold text-white">අඩු කරන්න</h5>
+                                <p class="text-sm text-slate-400">ලොකු සංඛ්‍යාවෙන් කුඩා සංඛ්‍යාව අඩු කරන්න.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-slate-900 font-black">2</div>
+                            <div>
+                                <h5 class="font-bold text-white">විශාල එකේ ලකුණ</h5>
+                                <p class="text-sm text-slate-400">විශාල සංඛ්‍යාව සතු වූ ලකුණ පිළිතුරට තබන්න.</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="mt-10 p-5 bg-black/40 rounded-2xl border border-white/5 font-mono text-orange-400">
+                        (+12) + (-5) = <span class="text-white">+7</span><br>
+                        (-20) + (+8) = <span class="text-white">-12</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MULTIPLICATION / DIVISION -->
+            <div id="content-multi" class="hidden space-y-8 animate-fadeIn">
+                <div class="glass p-10 rounded-[40px] bg-gradient-to-r from-blue-900/20 to-indigo-900/20">
+                    <h3 class="text-3xl font-bold mb-8 text-center underline decoration-blue-500 decoration-4 underline-offset-8">ගුණ කිරීම සහ බෙදීම සඳහා "ස්වර්ණමය රීතිය"</h3>
+                    <div class="grid md:grid-cols-2 gap-10">
+                        <div class="space-y-6">
+                            <div class="p-6 bg-white/5 rounded-3xl border border-white/10 hover:border-blue-500 transition">
+                                <h4 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
+                                    <i data-lucide="smile"></i> ලකුණු සමාන නම් (+)
+                                </h4>
+                                <p class="text-slate-400 text-sm mb-4 italic">"මිතුරාගේ මිතුරා මගේ මිතුරෙකි"</p>
+                                <div class="bg-black/40 p-4 rounded-xl font-mono text-lg space-y-2">
+                                    <div>(+) × (+) = <span class="text-blue-400">(+)</span></div>
+                                    <div>(-) × (-) = <span class="text-blue-400">(+)</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="p-6 bg-white/5 rounded-3xl border border-white/10 hover:border-red-500 transition">
+                                <h4 class="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
+                                    <i data-lucide="frown"></i> ලකුණු වෙනස් නම් (-)
+                                </h4>
+                                <p class="text-slate-400 text-sm mb-4 italic">"මිතුරාගේ සතුරා මගේ සතුරෙකි"</p>
+                                <div class="bg-black/40 p-4 rounded-xl font-mono text-lg space-y-2">
+                                    <div>(+) × (-) = <span class="text-red-400">(-)</span></div>
+                                    <div>(-) × (+) = <span class="text-red-400">(-)</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 p-6 bg-blue-500/10 rounded-2xl border-2 border-blue-500/20 text-center">
+                        <p class="font-bold text-slate-300 italic">"බෙදීම සඳහාද අනුගමනය කරන්නේ මේ රීතියම වේ."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Advanced Solver -->
+        <section class="space-y-10">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-accent rounded-xl flex items-center justify-center text-slate-900">
+                    <i data-lucide="cpu" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-4xl font-bold">Smart Solver <span class="text-slate-500 text-xl font-light">(Step-by-Step)</span></h2>
+            </div>
+
+            <div class="glass p-8 md:p-12 rounded-[40px] grid lg:grid-cols-2 gap-12">
+                <div class="space-y-8">
+                    <p class="text-slate-400">ඕනෑම සදිශ සංඛ්‍යා දෙකක් සහ ගණිතමය ක්‍රියාවලිය තෝරන්න. මම ඔබට එය විසඳන ආකාරය පියවරෙන් පියවර කියා දෙන්නම්.</p>
+                    
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">පළමු සංඛ්‍යාව (A)</label>
+                                <input type="number" id="calc-a" value="5" class="w-full bg-slate-800 border border-white/10 p-4 rounded-2xl outline-none focus:border-blue-500 transition font-mono text-2xl">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">දෙවන සංඛ්‍යාව (B)</label>
+                                <input type="number" id="calc-b" value="-3" class="w-full bg-slate-800 border border-white/10 p-4 rounded-2xl outline-none focus:border-blue-500 transition font-mono text-2xl">
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">ක්‍රියාවලිය (Operation)</label>
+                            <div class="flex gap-2">
+                                <button onclick="setOp('+')" id="op-plus" class="operation-btn active flex-1 py-4 text-2xl">+</button>
+                                <button onclick="setOp('-')" id="op-minus" class="operation-btn flex-1 py-4 text-2xl">-</button>
+                                <button onclick="setOp('x')" id="op-mult" class="operation-btn flex-1 py-4 text-2xl">×</button>
+                                <button onclick="setOp('/')" id="op-div" class="operation-btn flex-1 py-4 text-2xl">÷</button>
+                            </div>
+                        </div>
+
+                        <button onclick="solveLogic()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 rounded-2xl font-black text-xl shadow-xl shadow-blue-600/20 transition-all active:scale-95">විසඳුම බලන්න</button>
+                    </div>
+                </div>
+
+                <div id="solution-box" class="bg-black/30 rounded-[32px] p-8 border border-white/5 flex flex-col items-center justify-center min-h-[300px]">
+                    <div id="solution-placeholder" class="text-center space-y-4">
+                        <i data-lucide="sparkles" class="w-16 h-16 text-slate-700 mx-auto"></i>
+                        <p class="text-slate-600 font-bold uppercase tracking-widest text-sm">මම ඔබේ ගණන විසඳන තෙක් බලා සිටිමි...</p>
+                    </div>
+                    <div id="solution-content" class="hidden w-full space-y-6">
+                        <!-- Logic result injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: The Ultimate Challenge -->
+        <section id="challenge" class="space-y-12">
+            <div class="text-center">
+                <h2 class="text-5xl font-black mb-4">Ultimate Challenge</h2>
+                <p class="text-slate-400">ඔබේ දැනුම කොපමණද කියා පරීක්ෂා කර ලකුණු ලබා ගන්න!</p>
+            </div>
+
+            <div class="max-w-3xl mx-auto glass p-1 rounded-[40px] relative">
+                <div class="bg-slate-900 rounded-[38px] p-10 space-y-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex gap-2 items-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase">Score:</span>
+                            <span id="score-val" class="text-blue-400 font-black text-xl">0</span>
+                        </div>
+                        <div class="flex gap-2 items-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase">Timer:</span>
+                            <span id="timer-val" class="text-orange-400 font-black text-xl">15s</span>
+                        </div>
+                    </div>
+
+                    <div id="quiz-area" class="text-center space-y-10 py-10">
+                        <h3 id="quiz-q" class="text-5xl md:text-7xl font-black tracking-widest">(+5) × (-4)</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="checkQuizAnswer(0)" id="opt-0" class="glass p-6 rounded-2xl text-2xl font-bold hover:bg-blue-600 transition-all border-white/5 active:scale-95">--</button>
+                            <button onclick="checkQuizAnswer(1)" id="opt-1" class="glass p-6 rounded-2xl text-2xl font-bold hover:bg-blue-600 transition-all border-white/5 active:scale-95">--</button>
+                            <button onclick="checkQuizAnswer(2)" id="opt-2" class="glass p-6 rounded-2xl text-2xl font-bold hover:bg-blue-600 transition-all border-white/5 active:scale-95">--</button>
+                            <button onclick="checkQuizAnswer(3)" id="opt-3" class="glass p-6 rounded-2xl text-2xl font-bold hover:bg-blue-600 transition-all border-white/5 active:scale-95">--</button>
+                        </div>
+                    </div>
+                    
+                    <div id="quiz-feedback" class="text-center h-8 font-bold text-lg"></div>
+                </div>
+                <!-- Progress Bar -->
+                <div class="absolute bottom-0 left-10 right-10 h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="quiz-progress" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/50 border-t border-white/5 pt-20 pb-10 px-6">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12 mb-20">
+            <div class="space-y-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i data-lucide="calculator" class="text-white w-5 h-5"></i>
+                    </div>
+                    <span class="text-lg font-black tracking-tighter uppercase">MATHS <span class="text-blue-400">PISSA</span></span>
+                </div>
+                <p class="text-slate-500 text-sm leading-relaxed">
+                    ගණිතය කියන්නේ බය වෙන්න ඕනේ විෂයක් නෙවෙයි. එය ලෝකය දකින විදිහක්. අපි හදන්නේ ඒ දැක්ම ඔබට ලබා දීමටයි.
+                </p>
+                <div class="flex gap-4">
+                    <a href="#" class="text-slate-500 hover:text-white transition"><i data-lucide="facebook"></i></a>
+                    <a href="#" class="text-slate-500 hover:text-white transition"><i data-lucide="youtube"></i></a>
+                    <a href="#" class="text-slate-500 hover:text-white transition"><i data-lucide="instagram"></i></a>
+                </div>
+            </div>
+            <div class="space-y-6">
+                <h4 class="font-bold uppercase tracking-widest text-xs text-slate-400">පටුන</h4>
+                <ul class="space-y-3 text-slate-500 text-sm">
+                    <li><a href="#intro" class="hover:text-blue-400 transition">පාඩම හැඳින්වීම</a></li>
+                    <li><a href="#visualizer" class="hover:text-blue-400 transition">3D සංඛ්‍යා රේඛාව</a></li>
+                    <li><a href="#arithmetic" class="hover:text-blue-400 transition">ගණිතමය රීති</a></li>
+                    <li><a href="#challenge" class="hover:text-blue-400 transition">Online පරීක්ෂණය</a></li>
+                </ul>
+            </div>
+            <div class="space-y-6">
+                <h4 class="font-bold uppercase tracking-widest text-xs text-slate-400">Newsletter</h4>
+                <p class="text-slate-500 text-sm">නව පාඩම් සහ වීඩියෝ ගැන දැනගැනීමට ලියාපදිංචි වන්න.</p>
+                <div class="flex gap-2">
+                    <input type="email" placeholder="ඔබේ Email ලිපිනය" class="flex-1 bg-slate-800 border border-white/5 rounded-xl px-4 py-2 text-sm outline-none focus:border-blue-500">
+                    <button class="bg-blue-600 px-4 py-2 rounded-xl text-xs font-bold">Join</button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center border-t border-white/5 pt-10">
+            <p class="text-slate-600 text-xs tracking-widest uppercase">
+                &copy; 2024 MATHS PISSA INTERACTIVE. CREATED FOR THE NEXT GENERATION OF MATHEMATICIANS.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // --- 1. Three.js Engine Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        
+        const mainLight = new THREE.DirectionalLight(0x38bdf8, 1);
+        mainLight.position.set(10, 20, 10);
+        scene.add(mainLight);
+
+        // Grid & Axis
+        const gridHelper = new THREE.GridHelper(30, 30, 0x334155, 0x1e293b);
+        gridHelper.position.y = -0.5;
+        scene.add(gridHelper);
+
+        const axisLineGeo = new THREE.BoxGeometry(24, 0.08, 0.08);
+        const axisLineMat = new THREE.MeshPhongMaterial({ color: 0x475569 });
+        const axisLine = new THREE.Mesh(axisLineGeo, axisLineMat);
+        scene.add(axisLine);
+
+        // Tick marks & Numbers on line
+        for (let i = -10; i <= 10; i++) {
+            const tickGeo = new THREE.BoxGeometry(0.08, i === 0 ? 0.8 : 0.4, 0.08);
+            const tickMat = new THREE.MeshBasicMaterial({ color: i === 0 ? 0xffffff : 0x64748b });
+            const tick = new THREE.Mesh(tickGeo, tickMat);
+            tick.position.x = i;
+            scene.add(tick);
+        }
+
+        // The Marker (Animated Ball)
+        const ballGeo = new THREE.SphereGeometry(0.4, 32, 32);
+        const ballMat = new THREE.MeshPhongMaterial({ 
+            color: 0x38bdf8, 
+            emissive: 0x0c4a6e,
+            shininess: 100 
+        });
+        const player = new THREE.Mesh(ballGeo, ballMat);
+        player.position.y = 0.5;
+        scene.add(player);
+
+        camera.position.set(0, 3, 10);
+        camera.lookAt(0, 0, 0);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            player.rotation.y += 0.05;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- 2. Interactive Logic ---
+        const slider3d = document.getElementById('slider3d');
+        const displayVal = document.getElementById('displayVal');
+
+        slider3d.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            updateVisuals(val);
+        });
+
+        function updateVisuals(val) {
+            displayVal.innerText = val > 0 ? "+" + val : val;
+            
+            // GSAP Animation for smooth movement
+            gsap.to(player.position, {
+                x: val,
+                duration: 0.8,
+                ease: "back.out(1.7)"
+            });
+
+            // Change color based on sign
+            if (val > 0) {
+                gsap.to(player.material.color, { r: 0.13, g: 0.77, b: 0.36, duration: 0.3 }); // Green
+            } else if (val < 0) {
+                gsap.to(player.material.color, { r: 0.93, g: 0.26, b: 0.26, duration: 0.3 }); // Red
+            } else {
+                gsap.to(player.material.color, { r: 0.22, g: 0.74, b: 0.97, duration: 0.3 }); // Blue
+            }
+        }
+
+        function autoPlay() {
+            const randomPoints = Array.from({length: 5}, () => Math.floor(Math.random() * 21) - 10);
+            let i = 0;
+            const interval = setInterval(() => {
+                slider3d.value = randomPoints[i];
+                updateVisuals(randomPoints[i]);
+                i++;
+                if (i >= randomPoints.length) clearInterval(interval);
+            }, 1200);
+        }
+
+        function resetCamera() {
+            gsap.to(camera.position, { x: 0, y: 3, z: 10, duration: 1 });
+            gsap.to(camera.rotation, { x: -0.3, y: 0, z: 0, duration: 1 });
+        }
+
+        // --- 3. Arithmetic Switching Logic ---
+        function switchArithmetic(type) {
+            const addContent = document.getElementById('content-add');
+            const multiContent = document.getElementById('content-multi');
+            const tabAdd = document.getElementById('tab-add');
+            const tabMulti = document.getElementById('tab-multi');
+
+            if (type === 'add') {
+                addContent.classList.remove('hidden');
+                multiContent.classList.add('hidden');
+                tabAdd.classList.add('active', 'bg-blue-600', 'text-white');
+                tabMulti.classList.remove('active', 'bg-blue-600', 'text-white');
+                tabMulti.classList.add('text-slate-400');
+            } else {
+                addContent.classList.add('hidden');
+                multiContent.classList.remove('hidden');
+                tabMulti.classList.add('active', 'bg-blue-600', 'text-white');
+                tabAdd.classList.remove('active', 'bg-blue-600', 'text-white');
+                tabAdd.classList.add('text-slate-400');
+            }
+        }
+
+        // --- 4. Smart Solver Logic ---
+        let currentOp = '+';
+        function setOp(op) {
+            currentOp = op;
+            document.querySelectorAll('.operation-btn').forEach(b => b.classList.remove('active'));
+            const map = {'+': 'plus', '-': 'minus', 'x': 'mult', '/': 'div'};
+            document.getElementById(`op-${map[op]}`).classList.add('active');
+        }
+
+        function solveLogic() {
+            const a = parseFloat(document.getElementById('calc-a').value);
+            const b = parseFloat(document.getElementById('calc-b').value);
+            const content = document.getElementById('solution-content');
+            const placeholder = document.getElementById('solution-placeholder');
+            
+            if (isNaN(a) || isNaN(b)) return;
+
+            placeholder.classList.add('hidden');
+            content.classList.remove('hidden');
+
+            let result = 0;
+            let explanation = "";
+            let rule = "";
+
+            if (currentOp === '+') {
+                result = a + b;
+                const signA = a >= 0 ? '+' : '-';
+                const signB = b >= 0 ? '+' : '-';
+                if (signA === signB) {
+                    rule = "රීතිය: ලකුණු සමාන නිසා එකතු කර එම ලකුණම තබන්න.";
+                    explanation = `අපි ${Math.abs(a)} සහ ${Math.abs(b)} එකතු කළා. එවිට ${Math.abs(result)} ලැබෙනවා. දෙන්නාම ${signA === '+' ? 'ධන' : 'සෘණ'} නිසා පිළිතුර ${result}.`;
+                } else {
+                    rule = "රීතිය: ලකුණු වෙනස් නිසා අඩු කර විශාල එකේ ලකුණ තබන්න.";
+                    const absA = Math.abs(a);
+                    const absB = Math.abs(b);
+                    const diff = Math.abs(absA - absB);
+                    explanation = `විශාල අගයෙන් (${Math.max(absA, absB)}) කුඩා අගය (${Math.min(absA, absB)}) අඩු කළා. ලැබුණු ${diff} ට විශාල සංඛ්‍යාවේ ලකුණ දැම්මා.`;
+                }
+            } 
+            else if (currentOp === '-') {
+                result = a - b;
+                rule = "රීතිය: අඩු කිරීම යනු ප්‍රතිලෝමය එකතු කිරීමයි.";
+                explanation = `මෙය (${a}) + (${-b}) ලෙස ලියා එකතු කිරීමේ රීති අනුව විසඳිය හැක.`;
+            }
+            else if (currentOp === 'x' || currentOp === '/') {
+                result = currentOp === 'x' ? a * b : (b !== 0 ? a / b : "Infinity");
+                const sameSign = (a >= 0 && b >= 0) || (a < 0 && b < 0);
+                rule = sameSign ? "රීතිය: ලකුණු සමාන නිසා පිළිතුර ධන (+) වේ." : "රීතිය: ලකුණු වෙනස් නිසා පිළිතුර සෘණ (-) වේ.";
+                explanation = `සාමාන්‍ය පරිදි ගණනය කර ලකුණු රීතිය අනුව ${sameSign ? 'ධන' : 'සෘණ'} ලකුණ ලබා දුන්නා.`;
+            }
+
+            content.innerHTML = `
+                <div class="text-center space-y-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">ප්‍රතිඵලය</span>
+                    <div class="text-6xl font-black text-blue-400">${result}</div>
+                </div>
+                <div class="space-y-4 pt-6 border-t border-white/10">
+                    <div class="p-4 bg-blue-500/10 rounded-2xl border-l-4 border-blue-500">
+                        <p class="text-sm font-bold text-blue-400 mb-1">${rule}</p>
+                        <p class="text-xs text-slate-400 leading-relaxed">${explanation}</p>
+                    </div>
+                </div>
+            `;
+
+            // Sync with 3D
+            if (typeof result === 'number' && result >= -10 && result <= 10) {
+                slider3d.value = result;
+                updateVisuals(result);
+            }
+        }
+
+        // --- 5. Ultimate Challenge (Quiz System) ---
+        let score = 0;
+        let timeLeft = 15;
+        let timer;
+        let currentCorrectAnswer = 0;
+        let quizActive = false;
+
+        function startQuiz() {
+            quizActive = true;
+            generateQuestion();
+            resetTimer();
+        }
+
+        function generateQuestion() {
+            const ops = ['+', '-', 'x', '/'];
+            const op = ops[Math.floor(Math.random() * ops.length)];
+            let n1 = Math.floor(Math.random() * 21) - 10;
+            let n2 = Math.floor(Math.random() * 21) - 10;
+            
+            // Avoid division by zero and hard decimals
+            if (op === '/') {
+                if (n2 === 0) n2 = 2;
+                n1 = n2 * (Math.floor(Math.random() * 10) - 5);
+            }
+
+            let ans = 0;
+            switch(op) {
+                case '+': ans = n1 + n2; break;
+                case '-': ans = n1 - n2; break;
+                case 'x': ans = n1 * n2; break;
+                case '/': ans = n1 / n2; break;
+            }
+            currentCorrectAnswer = ans;
+
+            const qText = `(${n1 > 0 ? '+'+n1 : n1}) ${op === 'x' ? '×' : op === '/' ? '÷' : op} (${n2 > 0 ? '+'+n2 : n2})`;
+            document.getElementById('quiz-q').innerText = qText;
+
+            // Generate options
+            let options = [ans, ans + 2, ans - 5, ans * -1];
+            options = [...new Set(options)]; // remove duplicates
+            while(options.length < 4) options.push(ans + Math.floor(Math.random() * 10) + 1);
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach((opt, idx) => {
+                const btn = document.getElementById(`opt-${idx}`);
+                btn.innerText = opt > 0 ? "+" + opt : opt;
+                btn.dataset.val = opt;
+            });
+        }
+
+        function checkQuizAnswer(idx) {
+            if (!quizActive) return;
+            const chosen = parseFloat(document.getElementById(`opt-${idx}`).dataset.val);
+            const feedback = document.getElementById('quiz-feedback');
+
+            if (chosen === currentCorrectAnswer) {
+                score += 10;
+                document.getElementById('score-val').innerText = score;
+                feedback.innerText = "✅ නිවැරදියි! +10 Points";
+                feedback.className = "text-center h-8 font-bold text-lg text-green-400 animate-bounce";
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+                setTimeout(() => {
+                    generateQuestion();
+                    resetTimer();
+                    feedback.className = "text-center h-8 font-bold text-lg";
+                    feedback.innerText = "";
+                }, 1000);
+            } else {
+                feedback.innerText = "❌ වැරදියි! නැවත උත්සාහ කරන්න.";
+                feedback.className = "text-center h-8 font-bold text-lg text-red-400";
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            timeLeft = 15;
+            document.getElementById('timer-val').innerText = timeLeft + "s";
+            document.getElementById('quiz-progress').style.width = "100%";
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-val').innerText = timeLeft + "s";
+                document.getElementById('quiz-progress').style.width = (timeLeft / 15 * 100) + "%";
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    document.getElementById('quiz-feedback').innerText = "⌛ කාලය අවසන්!";
+                    setTimeout(generateQuestion, 2000);
+                }
+            }, 1000);
+        }
+
+        // Initialize quiz on load
+        window.onload = () => {
+            startQuiz();
+            solveLogic(); // Run initial calc
+        };
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+    </script>
+</body>
+</html>
